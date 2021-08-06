@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.ssafy.sharehouse.model.repository.HouseRepo">
+
+	<select id="search" resultType="HouseRent">
+		select	r.rentno as no, i.dong as dong, i.name as houseName, i.year as buildYear, i.code as code, r.dealDate as dealDate, r.area as area, r.floor as floor, r.deposit as deposit, r.monthly as monthlyRent, CAST(r.area/29.2 AS signed integer) as residentsNum, concat(b.sido, ' ', b.gugun, ' ', b.dong, ' ', i.jibun) as address
+		from	houserent r join houseinfo i join baseaddress b
+		on		r.infono = i.infono and i.code = b.code
+		where	i.code = #{dong};
+	</select>
+
+	<select id="searchAll" parameterType="PageNavigation" resultType="HouseRent">
+		select	r.rentno as no, i.dong as dong, i.name as houseName, i.year as buildYear, i.code as code, r.dealDate as dealDate, r.area as area, r.floor as floor, r.deposit as deposit, r.monthly as monthlyRent, CAST(r.area/29.2 AS signed integer) as residentsNum, concat(b.sido, ' ', b.gugun, ' ', b.dong, ' ', i.jibun) as address
+		from	houserent r join houseinfo i join baseaddress b
+		on		r.infono = i.infono and i.code = b.code
+	</select>
+
+	<select id="searchDong" parameterType="Map" resultType="HouseRent">
+		select	r.rentno as no, i.dong as dong, i.name as houseName, i.year as buildYear, i.code as code, r.dealDate as dealDate, r.area as area, r.floor as floor, r.deposit as deposit, r.monthly as monthlyRent, CAST(r.area/29.2 AS signed integer) as residentsNum, concat(b.sido, ' ', b.gugun, ' ', b.dong, ' ', i.jibun) as address
+		from	houserent r join houseinfo i join baseaddress b
+		on		r.infono = i.infono and i.code = b.code
+		where	i.code = #{dong}
+		limit	#{start}, #{spp}
+	</select>
+	
+	<select id="searchGugun" parameterType="Map" resultType="HouseRent">
+		select	r.rentno as no, i.dong as dong, i.name as houseName, i.year as buildYear, i.code as code, r.dealDate as dealDate, r.area as area, r.floor as floor, r.deposit as deposit, r.monthly as monthlyRent, CAST(r.area/29.2 AS signed integer) as residentsNum, concat(b.sido, ' ', b.gugun, ' ', b.dong, ' ', i.jibun) as address
+		from	houserent r join houseinfo i join baseaddress b
+		on		r.infono = i.infono and i.code = b.code
+		where	left(i.code,5) = #{gugun}
+		limit	#{start}, #{spp}
+	</select>
+
+	<select id="serchAptName" parameterType="Map" resultType="HouseRent">
+		select	r.rentno as no, i.dong as dong, i.name as houseName, i.year as buildYear, i.code as code, r.dealDate as dealDate, r.area as area, r.floor as floor, r.deposit as deposit, r.monthly as monthlyRent, CAST(r.area/29.2 AS signed integer) as residentsNum, concat(b.sido, ' ', b.gugun, ' ', b.dong, ' ', i.jibun) as address
+		from	houserent r join houseinfo i join baseaddress b
+		on		r.infono = i.infono and i.code = b.code
+		where	i.name like concat('%', #{aptName}, '%') and i.code = #{dong}
+		limit	#{start}, #{spp}
+	</select>
+	
+	<select id="getTotalCount" parameterType="Map" resultType="int">	
+		select	count(r.rentno)
+		from	houserent r join houseinfo i
+		on		r.infono = i.infono
+		<if test="aptName != null">
+			where	i.name like concat('%', #{aptName}, '%') and i.code = #{dong}
+		</if>
+		<if test="aptName == null">
+			where	i.code = #{dong}
+		</if>
+	</select>
+	
+	<select id="selectMostPopularTen" resultType="HouseRent">
+		select	r.rentno as no, i.dong as dong, i.name as houseName, i.year as buildYear, i.code as code, r.dealDate as dealDate, r.area as area, r.floor as floor, r.deposit as deposit, r.monthly as monthly, CAST(r.area/29.2 AS signed integer) as residentNum, concat(b.sido, ' ', b.gugun, ' ', b.dong, ' ', i.jibun) as address
+		from	houserent r join houseinfo i join baseaddress b
+		on		r.infono = i.infono and i.code = b.code
+		where	r.rentno in (
+				select * from (
+	                select	rentno
+					from	wish
+					group by rentno
+					order by count(*) desc
+	                limit 	10
+                ) as topten
+		);
+	</select>
+	
+	<select id="getSido" resultType="AreaCode">
+		select		distinct left(code, 2) as sidoCode, sido as sidoName
+		from		baseaddress
+		order by	code;
+	</select>
+	
+	<select id="getGugunInSido" parameterType="String" resultType="AreaCode">
+		select		distinct left(code, 2) as sidoCode, sido as sidoName, left(code,5) as gugunCode, gugun as gugunName
+		from		baseaddress
+		where		left(code, 2) = #{sidoCode}
+		order by	code;
+	</select>	
+	
+	<select id="getDongInGugun" parameterType="String" resultType="AreaCode">
+		select		distinct left(code, 2) as sidoCode, sido as sidoName, left(code,5) as gugunCode, gugun as gugunName, code as dongCode, dong as dongName
+		from		baseaddress
+		where		left(code, 5) = #{gugunCode}
+		order by	code;
+	</select>
+	
+	
+	<select id="getWishNumberByRentId" parameterType="int" resultType="int">
+	        select	count(*)
+	        from	wish w
+	        where	rentno = #{rentNo};
+	</select>
+	
+	<select id="getChatRoomNumberByRentId" parameterType="int" resultType="int">
+	        select  count(*)
+	        from	member m join chatroom c
+	        on		m.roomid = c.roomid
+	        where	c.rentno = #{rentNo};
+	</select>
+</mapper>

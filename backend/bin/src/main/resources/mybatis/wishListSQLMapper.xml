@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.ssafy.sharehouse.model.repository.WishListRepo">
+
+	<insert id="registWishRent" parameterType="Map">
+		insert	into wish(id, rentno)
+		values	(#{userId}, #{rentNo})
+	</insert>
+	
+	<delete id="removeWishRent" parameterType="Map">
+		delete	from wish
+		where	id = #{userId} and rentno = #{rentNo}
+	</delete>
+	
+	<select id="search" parameterType="String" resultType="HouseRent">
+		select	r.rentno as no, i.dong as dong, i.name as houseName, i.year as buildYear, i.code as code, r.dealDate as dealDate, r.area as area, r.floor as floor, r.deposit as deposit, r.monthly as monthlyRent, CAST(r.area/29.2 AS signed integer) as residenstNum, concat(b.sido, ' ', b.gugun, ' ', b.dong, ' ', i.jibun) as address
+		from	houserent r join houseinfo i join baseaddress b
+		on		r.infono = i.infono and i.code = b.code
+		where	r.rentno in (
+			select 	rentno
+			from	wish
+			where	id = #{userId})
+	</select>
+	
+</mapper>

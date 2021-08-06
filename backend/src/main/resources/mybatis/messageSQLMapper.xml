@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.ssafy.sharehouse.model.repository.MessageRepo">
+
+	<!-- 채팅하기 -->
+	<insert id="createMessage" parameterType="Message">
+		insert into message(content, roomid, sender)
+		values	(#{content}, #{chatRoomId}, #{senderId});
+	</insert>
+	
+	<!-- 채팅방 상위 10개 가져오기 -->
+	<select id="getMessageByChatRoomId" resultType="Message">
+		select t1.msgno as messageId, t1.content as content, #{roomId} as chatRoomId, t1.sender as senderId, t2.name as senderName
+		from (
+		select 
+			msgno, content, sender
+			from message
+			inner join(
+				select msgno from message where roomid=#{roomId} order by msgno
+				desc limit #{idx}, 10
+			) as q
+			using (`msgno`)
+			where roomid=#{roomId}) as t1 
+		inner join user as t2
+	    on t1.sender = t2.id;
+	</select>
+	
+</mapper>

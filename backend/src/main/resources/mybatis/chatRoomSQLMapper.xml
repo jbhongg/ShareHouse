@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.ssafy.sharehouse.model.repository.ChatRoomRepo">
+
+	<!-- 특정 채팅방을 매물 번호로 생성 -->
+	<insert id="create">
+		insert into chatroom(opendate, rentno)
+		values (now(),
+		#{rentno});
+	</insert>
+
+	<!-- 매물 번호로 방이 이미 존재하는지 조회 -->
+	<select id="searchChatRoom" resultType="int">
+		select count(*)
+		from
+		chatroom
+		where rentno = #{rentno}
+	</select>
+
+	<!-- 특정 매물 번호의 채팅방 리턴 -->
+	<select id="readChatRoom" parameterType="int"
+		resultType="ChatRoom">
+		select c.roomid as roomId, i.name as roomName, c.opendate
+		as openDate, c.rentno as rentNo
+		from chatroom c join houserent r join
+		houseinfo i
+		on c.rentno = r.rentno and r.infono = i.infono
+		where c.rentno =
+		#{rentno};
+	</select>
+
+	<!-- 모든 채팅방 리스트 리턴 -->
+	<select id="readAllChatRoom" resultType="ChatRoom">
+		select c.roomid as
+		roomId, i.name as roomName, c.opendate as openDate, c.rentno as rentNo
+		from chatroom c join houserent r join houseinfo i
+		on c.rentno = r.rentno and r.infono = i.infono;
+	</select>
+
+	<select id="readAllChatRoomWithUserId" parameterType="String"
+		resultType="ChatRoom">
+		select c.roomid as roomId, i.name as roomName, c.opendate
+		as openDate, c.rentno as rentNo
+		from chatroom c join member m join houserent r join houseinfo i
+		on c.rentno = r.rentno and r.infono = i.infono and m.roomid=c.roomid
+		where id=#{userid};
+	</select>
+
+	<!-- 특정 채팅방에 속한 유저 리스트 전체 반환 -->
+	<select id="readUserInChatRoom" parameterType="int"
+		resultType="int">
+		select count(m.id)
+		from member m join chatroom c
+		on m.roomid = c.roomid
+		where c.rentno = #{rentno}
+	</select>
+
+	<select id="searchUserInChatRoom" parameterType="Map"
+		resultType="int">
+		select count(*) from member
+		where roomid=#{roomid} and
+		id=#{userid}
+	</select>
+
+	<insert id="enterChatRoom" parameterType="Map">
+		insert into
+		member(roomid, id)
+		select #{roomid}, #{userid} from member
+		where not
+		exists (
+		select * from member
+		where roomid=#{roomid} and id = #{userid}
+		)limit 1;
+	</insert>
+
+	<delete id="exitChatRoom" parameterType="Map">
+		delete from member
+		where roomid=#{roomId} and id=#{userId}
+	</delete>
+
+
+</mapper>
