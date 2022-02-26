@@ -30,6 +30,8 @@
 
 <br>
 
+#### 시연 동영상 : https://drive.google.com/file/d/152dKIBMWo-bRgoRBFpR5nZPpa-eyZLHb/view?usp=sharing
+
 
 ## 프로젝트 구조
 ![image](https://user-images.githubusercontent.com/30489264/129457907-8c970723-4728-48fc-858f-6a8fda56ef86.png)
